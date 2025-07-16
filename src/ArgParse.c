@@ -12,7 +12,7 @@ static bool _COLOR    = true; // 是否启用颜色
 
 void argParseDisableAutoHelp() { _AutoHelp = false; }
 
-ArgParse *argParseInit(char *documentation) {
+ArgParse *argParseInit(char *documentation, ArgParseValueType value_type) {
     ArgParse *argParse = malloc(sizeof(ArgParse));
     if (argParse == NULL) {
         return NULL;
@@ -26,6 +26,9 @@ ArgParse *argParseInit(char *documentation) {
     argParse->argc            = 0;
     argParse->argv            = NULL;
     argParse->documentation   = stringNewCopy(documentation);
+    argParse->value_type      = value_type;
+    argParse->val             = NULL;
+    argParse->val_len         = 0;
 
     argParseAutoHelp(argParse);
 
@@ -259,7 +262,16 @@ void __freeCommand(Command *command) {
     free(command->sub_commands);
     free(command->name);
     free(command->help);
+    free(command->args);
     free(command->default_val);
+
+    if (command->val_len > 0) {
+        for (size_t i = 0; i < command->val_len; i++) {
+            free(command->val[i]);
+        }
+        free(command->val);
+    }
+
     free(command);
 }
 
@@ -274,7 +286,15 @@ void argParseFree(ArgParse *argParse) {
     for (size_t i = 0; i < argParse->global_args_len; i++) {
         __freeCommandArgs(argParse->global_args[i]);
     }
+    if (argParse->val_len > 0) {
+        for (size_t i = 0; i < argParse->val_len; i++) {
+            free(argParse->val[i]);
+        }
+        free(argParse->val);
+    }
+
     free(argParse->global_args);
+    free(argParse->documentation);
     free(argParse);
 }
 /** End----------------内存释放API---------------- */
@@ -369,25 +389,79 @@ int __processSubCommand(ArgParse *argParse,
     return -1;
 }
 
+int __processVal(ArgParse *argParse, int index) {
+    CommandArgs *arg = NULL;
+
+    for (int i = index; i < argParse->argc; i++) {
+        ArgType argType = checkArgType(argParse->argv[i]);
+        switch (argType) {
+        case COMMAND:
+            argParseSetVal(argParse, argParse->argv[i]);
+            break;
+        case LONG_ARG:
+            // 处理全局命令长选项
+            arg = argParseFindGlobalArgs(argParse, argParse->argv[i], false);
+            if (arg == NULL) {
+                char *msg = argParseGenerateArgErrorMsg(
+                    argParse, argParse->argv[i], false);
+                argParseError(argParse, argParse->current_command, msg, NULL);
+                return -1;
+            }
+            i = __processArgs(argParse, arg, i);
+            break;
+        case SHORT_ARG:
+            // 处理全局命令短选项
+            arg = argParseFindGlobalArgs(argParse, argParse->argv[i], true);
+            if (arg == NULL) {
+                char *msg = argParseGenerateArgErrorMsg(
+                    argParse, argParse->argv[i], true);
+                argParseError(argParse, argParse->current_command, msg, NULL);
+                return -1; // 错误处理
+            }
+            i = __processArgs(
+                argParse, arg, i); // 解析参数值并返回以解析到的索引位置
+            break;
+        default:
+            argParseError(
+                argParse, argParse->current_command, "unknown error", NULL);
+            return -1;
+        }
+    }
+    return argParse->argc - 1;
+}
+
 // 处理命令参数
-
 int __processCommand(ArgParse *argParse, char *name, int command_index) {
-    Command *command = argParseFindCommand(argParse, name);
-    if (command == NULL) {
+    CommandArgs *arg     = NULL;
+    Command     *command = NULL;
 
-        argParseError(argParse, command, "Command not found", NULL);
+    command              = argParseFindCommand(argParse, name); // 查找命令
+
+    if (command == NULL && argParse->value_type == NOVALUE) {
+        char *msg = NULL;
+        if (name != NULL) {
+            msg = stringNewCopy("\033[1;31mERROR\033[0m:");
+            __catStr(&msg, 1, name);
+            __catStr(&msg, 1, " is not a valid command");
+        }
+
+        argParseError(argParse, command, msg, NULL);
         return -1;
     }
 
-    command->is_trigged       = true; // 标记命令被触发
+    if (command == NULL && argParse->value_type != NOVALUE) {
+        return __processVal(argParse, command_index);
+    }
 
-    CommandArgs *arg          = NULL;
-    argParse->current_command = command;
+    if (command != NULL) {
+        command->is_trigged       = true; // 标记命令被触发
+        argParse->current_command = command;
+    }
 
     for (int i = command_index + 1; i < argParse->argc; i++) {
         ArgType argType = checkArgType(argParse->argv[i]);
         switch (argType) {
-        case COMMAND:
+        case COMMAND: {
             // 命令无值则处理子命令
             if (command->value_type == NOVALUE) {
                 __processSubCommand(argParse, command, argParse->argv[i], i);
@@ -397,6 +471,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
                 argParseSetCommandVal(command, argParse->argv[i]);
             }
             break;
+        }
         case LONG_ARG:
             // 处理命令长选项
             arg = argParseFindCommandArgs(command, argParse->argv[i], false);
@@ -462,6 +537,7 @@ void argParseParse(ArgParse *argParse, int argc, char *argv[]) {
         ArgType argType = checkArgType(argv[i]);
         switch (argType) {
         case COMMAND:
+            // 处理命令
             i = __processCommand(argParse, argv[i], i);
             break;
         case LONG_ARG: // 处理全局长选项
@@ -638,44 +714,27 @@ char **argParseGetGlobalArgList(ArgParse *argParse, char *opt, int *len) {
     return arg->val;
 }
 
-size_t __getStrlen(char *str) {
-    if (str == NULL) {
-        return 0;
+char **argParseGetValList(ArgParse *argParse, int *len) {
+    if (argParse == NULL) {
+        return NULL;
     }
-    return strlen(str);
+
+    if (argParse->val_len == 0) {
+        return NULL;
+    }
+    *len = argParse->val_len;
+    return argParse->val;
 }
 
-void __catStr(char **dst, int count, ...) {
-    va_list args;
-    va_start(args, count);
-
-    size_t total_len = 0;
-    total_len        = __getStrlen(*dst);
-
-    // 计算总长度
-    char *temp       = NULL;
-    for (int i = 0; i < count; i++) {
-        temp = va_arg(args, char *);
-        total_len += __getStrlen(temp);
-    }
-    va_end(args);
-
-    // 分配内存
-    *dst = realloc(*dst, total_len + 1); // +1 是为了存储字符串结束符 '\0'
-    if (*dst == NULL) {
-        va_end(args);
-        return; // 处理内存分配失败
+char *argParseGetVal(ArgParse *argParse) {
+    if (argParse == NULL) {
+        return NULL;
     }
 
-    // 拼接字符串
-    va_start(args, count);
-    temp = NULL;
-    for (int i = 0; i < count; i++) {
-        temp = va_arg(args, char *);
-        strcat(*dst, temp);
+    if (argParse->val_len == 0) {
+        return NULL;
     }
-
-    va_end(args);
+    return argParse->val[0];
 }
 
 char *argParseGenerateHelpForCommand(Command *command) {
@@ -759,25 +818,41 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name) {
     return command->is_trigged;
 }
 
-_Noreturn void argParseError(ArgParse *argParse,
-                             Command  *lastCommand,
-                             char     *prefix,
-                             char     *suffix) {
+_Noreturn void argParseError(ArgParse   *argParse,
+                             Command    *lastCommand,
+                             const char *prefix,
+                             const char *suffix) {
     if (argParse == NULL) {
         printf("ERROR: Parse is NULL\n");
         exit(1);
     }
     if (lastCommand == NULL) {
+        char *mgs = stringNewCopy("");
+        if (prefix != NULL) {
+            __catStr(&mgs, 1, prefix);
+        }
         char *help = argParseGenerateHelp(argParse);
-        printf("\033[1;31mERROR\033[0m: Last command is unknown\n");
-        printf("%s\n", help);
+
+        if (help != NULL) {
+            __catStr(&mgs, 2, "\n", help);
+        }
+
+        if (suffix != NULL) {
+            __catStr(&mgs, 2, "\n", suffix);
+        }
+
+        // printf("\033[1;31mERROR\033[0m: Last command is unknown\n");
+        printf("%s\n", mgs);
+        free(mgs);
+        free(help);
+        argParseFree(argParse);
         exit(1);
     }
 
     char *ErrorMsg = NULL;
 
     if (prefix != NULL) {
-        ErrorMsg = stringNewCopy(prefix);
+        ErrorMsg = stringNewCopy((char *)prefix);
     }
 
     char *command_help_msg     = argParseGenerateHelpForCommand(lastCommand);
@@ -794,8 +869,7 @@ _Noreturn void argParseError(ArgParse *argParse,
     printf("%s\n", ErrorMsg);
     free(ErrorMsg);
     free(command_help_msg);
-    free(prefix);
-    free(suffix);
+    argParseFree(argParse);
     exit(1);
 }
 

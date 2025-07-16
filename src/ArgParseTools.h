@@ -3,6 +3,7 @@
 
 #include "ArgParse.h"
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,8 @@ bool argParseSetArgVal(CommandArgs *args, char *val); // 设置命令参数值
 
 bool argParseSetCommandVal(Command *command, char *val); // 设置命令值
 
+bool argParseSetVal(ArgParse *argParse, char *val); // 设置值
+
 ArgType checkArgType(char *arg); // 检查参数类型
 
 Command *argParseFindCommand(ArgParse *argParse, char *name); // 查找命令
@@ -59,7 +62,9 @@ CommandArgs *argParseFindGlobalArgs(ArgParse *argParse,
                                     char     *name,
                                     bool      short_flag); // 查找全局参数
 
-char *stringNewCopy(char *str); // 创建字符串副本
+char  *stringNewCopy(char *str);             // 创建字符串副本
+void   __catStr(char **dst, int count, ...); // 字符串拼接
+size_t __getStrlen(char *str);               // 获取字符串长度
 
 #ifdef __cplusplus
 }

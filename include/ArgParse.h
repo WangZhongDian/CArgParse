@@ -69,19 +69,25 @@ typedef struct ArgParse {
     struct CommandArgs **global_args;     // 全局参数
     int                  global_args_len; // 全局参数个数
     char                *documentation;   // 帮助文档
+    ArgParseValueType value_type; // 值类型 程序默认需要的值例如 gcc main.c
+
     /* 解析所用到的属性*/
     struct Command *current_command; // 当前解析到的命令
-    int             argc;            // 参数个数
-    char          **argv;            // 参数列表
+    char          **val;
+    int             val_len;
+    int             argc; // 参数个数
+    char          **argv; // 参数列表
 } ArgParse;
 
 /** Start---------------构造API---------------- */
 
 /**
  * @brief 初始化解析器
+ * @param documentation 帮助文档
+ * @param value_type 值类型,程序默认需要的值例如 gcc main.c
  * @return ArgParse* 解析器指针
  */
-ArgParse *argParseInit(char *documentation);
+ArgParse *argParseInit(char *documentation, ArgParseValueType value_type);
 
 /**
  * @brief 释放解析器
@@ -268,6 +274,9 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name);
  */
 bool argParseCheckGlobalTriggered(ArgParse *argParse, char *opt);
 
+char  *argParseGetVal(ArgParse *argParse);
+char **argParseGetValList(ArgParse *argParse, int *len);
+
 /** End----------------解析API---------------- */
 
 /**
@@ -294,10 +303,10 @@ char *argParseGenerateHelp(ArgParse *argParse);
 char *
 argParseGenerateArgErrorMsg(ArgParse *argParse, char *name, bool short_flag);
 
-_Noreturn void argParseError(ArgParse *argParse,
-                             Command  *lastCommand,
-                             char     *prefix,
-                             char     *suffix);
+_Noreturn void argParseError(ArgParse   *argParse,
+                             Command    *lastCommand,
+                             const char *prefix,
+                             const char *suffix);
 
 #ifdef __cplusplus
 }

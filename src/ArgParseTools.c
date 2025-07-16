@@ -1,5 +1,7 @@
 #include "ArgParseTools.h"
 #include "ArgParse.h"
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -242,4 +244,85 @@ bool argParseSetCommandVal(Command *command, char *val) {
         return true;
     }
     return false;
+}
+
+/**
+ * @brief 设置解析值，该值为程序所需的无命令值例如`gcc mian.c`的`main.c`
+ * @param argParse 解析器
+ * @param val 值
+ * @return 成功返回true，失败返回false
+ */
+bool argParseSetVal(ArgParse *argParse, char *val) {
+
+    if (argParse->value_type == MULTIVALUE) { // 多值
+        argParse->val =
+            realloc(argParse->val, (argParse->val_len + 1) * sizeof(char *));
+        if (argParse->val == NULL) {
+            return false;
+        }
+        argParse->val[argParse->val_len] = stringNewCopy(val);
+        if (argParse->val[argParse->val_len] == NULL) {
+            return false;
+        }
+        argParse->val_len++;
+        return true;
+    } else if (argParse->value_type == SINGLEVALUE) { // 单值
+        if (argParse->val != NULL) {
+            free(argParse->val);
+        }
+        argParse->val = malloc(sizeof(char *));
+
+        if (argParse->val == NULL) {
+            return false;
+        }
+        argParse->val[0] = stringNewCopy(val); // 分配内存
+        if (argParse->val[0] == NULL) {
+            return false;
+        }
+        argParse->val_len = 1;
+        return true;
+    } else if (argParse->value_type == NOVALUE) { // 无值
+        return true;
+    }
+    return false;
+}
+
+size_t __getStrlen(char *str) {
+    if (str == NULL) {
+        return 0;
+    }
+    return strlen(str);
+}
+
+void __catStr(char **dst, int count, ...) {
+    va_list args;
+    va_start(args, count);
+
+    size_t total_len = 0;
+    total_len        = __getStrlen(*dst);
+
+    // 计算总长度
+    char *temp       = NULL;
+    for (int i = 0; i < count; i++) {
+        temp = va_arg(args, char *);
+        total_len += __getStrlen(temp);
+    }
+    va_end(args);
+
+    // 分配内存
+    *dst = realloc(*dst, total_len + 1); // +1 是为了存储字符串结束符 '\0'
+    if (*dst == NULL) {
+        va_end(args);
+        return; // 处理内存分配失败
+    }
+
+    // 拼接字符串
+    va_start(args, count);
+    temp = NULL;
+    for (int i = 0; i < count; i++) {
+        temp = va_arg(args, char *);
+        strcat(*dst, temp);
+    }
+
+    va_end(args);
 }
