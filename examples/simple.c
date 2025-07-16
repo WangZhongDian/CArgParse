@@ -4,7 +4,7 @@
 #include <string.h>
 
 ArgParse *Init() {
-    ArgParse *ap = argParseInit("简单的命令行工具示例");
+    ArgParse *ap = argParseInit("简单的命令行工具示例",NOVALUE);
 
     // 添加第一个命令
     Command *cmd = argParseAddCommand(

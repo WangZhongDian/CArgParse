@@ -92,9 +92,10 @@ example -h
 
 1. 初始化解析器
 ```c
-ArgParse *argParseInit(char *documentation);
+ArgParse *argParseInit(char *documentation，ArgParseValueType value_type);
 ```
 - `documentation` 解析器的文档信息
+- `valueType` 程序本身需要的值类型
 
 2. 添加命令
 ```c
@@ -225,6 +226,16 @@ char **argParseGetGlobalArgList(ArgParse *argParse, char *opt, int *len);
 - `argParse` 解析器
 - `opt` 参数选项
 - `len` 参数个数
+
+8. 获取程序值
+该值为非命令的值，类似`gcc main.c`，该类程序没有使用命令，因此该值就是`main.c`
+```c
+char  *argParseGetVal(ArgParse *argParse);
+char **argParseGetValList(ArgParse *argParse, int *len);
+```
+- `argParse` 解析器
+- `len` 参数个数
+
 
 ### 触发检测API
 1. 检测当前检测的命令的某个选项是否触发
