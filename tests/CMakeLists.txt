@@ -32,3 +32,8 @@ add_executable(${PROJECT_NAME}unknow_command_arg test_unknow_command.c)
 target_link_libraries(${PROJECT_NAME}unknow_command_arg CArgParse)
 add_test(${PROJECT_NAME}unknow_command_arg ${PROJECT_NAME}unknow_command_arg install --unknow)
 set_tests_properties(${PROJECT_NAME}unknow_command_arg PROPERTIES WILL_FAIL TRUE)
+
+# 未知命令选项测试,预期打印该命令的帮助信息
+add_executable(${PROJECT_NAME}val test_val.c)
+target_link_libraries(${PROJECT_NAME}val CArgParse)
+add_test(${PROJECT_NAME}val ${PROJECT_NAME}val file1.txt file2.txt file3.txt -v -q)
