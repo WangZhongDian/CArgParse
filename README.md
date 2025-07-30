@@ -34,7 +34,7 @@ conan create .
 
 
 ## 示例程序
-构建简单的命令行程序
+构建简单的命令行程序,更多示例请参考`example`目录
 ```c
 #include "ArgParse.h"
 #include <stdbool.h>
@@ -42,7 +42,7 @@ conan create .
 #include <string.h>
 
 ArgParse *Init() {
-    ArgParse *ap = argParseInit("简单的命令行工具示例");
+    ArgParse *ap = argParseInit("简单的命令行工具示例",NOVALUE);
 
     // 添加第一个命令
     Command *cmd = argParseAddCommand(
