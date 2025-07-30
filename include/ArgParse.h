@@ -7,6 +7,14 @@
 extern "C" {
 #endif
 
+
+#ifdef _MSC_VER
+    #define NORETURN __declspec(noreturn)
+#else
+    #define NORETURN _Noreturn
+#endif
+
+
 #define ARG_DEFAULT_HELP_FLAG "--help"
 
 typedef struct ArgParse ArgParse; // 解析器
@@ -303,7 +311,7 @@ char *argParseGenerateHelp(ArgParse *argParse);
 char *
 argParseGenerateArgErrorMsg(ArgParse *argParse, char *name, bool short_flag);
 
-_Noreturn void argParseError(ArgParse   *argParse,
+NORETURN void argParseError(ArgParse   *argParse,
                              Command    *lastCommand,
                              const char *prefix,
                              const char *suffix);
