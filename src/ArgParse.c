@@ -819,9 +819,9 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name) {
 }
 
 NORETURN void argParseError(ArgParse   *argParse,
-                             Command    *lastCommand,
-                             const char *prefix,
-                             const char *suffix) {
+                            Command    *lastCommand,
+                            const char *prefix,
+                            const char *suffix) {
     if (argParse == NULL) {
         printf("ERROR: Parse is NULL\n");
         exit(1);

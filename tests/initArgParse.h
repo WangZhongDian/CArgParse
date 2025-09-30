@@ -4,7 +4,7 @@
 #include <string.h>
 
 ArgParse *initArgParse() {
-    ArgParse *argparse    = argParseInit("测试程序",ArgParseNOVALUE);
+    ArgParse *argparse    = argParseInit("测试程序", ArgParseNOVALUE);
     Command  *command     = NULL;
     Command  *sub_command = NULL;
 
@@ -17,12 +17,23 @@ ArgParse *initArgParse() {
                          NULL,
                          false,
                          ArgParseNOVALUE);
-    argParseAddGlobalArg(
-        argparse, "-q", "--quiet", "Quiet mode", NULL, NULL, false, ArgParseNOVALUE);
+    argParseAddGlobalArg(argparse,
+                         "-q",
+                         "--quiet",
+                         "Quiet mode",
+                         NULL,
+                         NULL,
+                         false,
+                         ArgParseNOVALUE);
 
     // add arguments
-    command = argParseAddCommand(
-        argparse, "install", "Install the package", NULL, NULL, NULL, ArgParseNOVALUE);
+    command = argParseAddCommand(argparse,
+                                 "install",
+                                 "Install the package",
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 ArgParseNOVALUE);
     argParseAddArg(command,
                    "-i",
                    "--index",
@@ -48,8 +59,13 @@ ArgParse *initArgParse() {
                    false,
                    ArgParseMULTIVALUE);
 
-    sub_command = argParseAddSubCommand(
-        command, "tools", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
+    sub_command = argParseAddSubCommand(command,
+                                        "tools",
+                                        "Install tools",
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-t",
@@ -59,8 +75,13 @@ ArgParse *initArgParse() {
                    NULL,
                    true,
                    ArgParseMULTIVALUE);
-    sub_command = argParseAddSubCommand(
-        command, "tools_sub", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
+    sub_command = argParseAddSubCommand(command,
+                                        "tools_sub",
+                                        "Install tools",
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-s",
