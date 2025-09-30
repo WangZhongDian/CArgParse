@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define RED   "\033[0;31m"
+#define BLUE  "\033[0;34m"
+#define RESET "\033[0m"
+
 static bool _AutoHelp = true; // 是否自动添加帮助信息
 static bool _COLOR    = true; // 是否启用颜色
 
@@ -37,15 +41,20 @@ ArgParse *argParseInit(char *documentation, ArgParseValueType value_type) {
 
 /**
  * @brief 自动帮助信息回调函数
+ * @param argParse ArgParse结构体指针
+ * @param val 参数值
+ * @param val_len 参数值长度
+ * @return 无返回值，将直接结束程序
  */
-int __helpCallback(ArgParse *argParse, char **val, int val_len) {
+NORETURN int __helpCallback(ArgParse *argParse, char **val, int val_len) {
     if (argParse == NULL) {
-        return -1;
+        exit(1);
     }
     char *help_doc = argParseGenerateHelp(argParse);
     printf("%s\n", help_doc);
     free(help_doc);
-    return 0;
+    argParseFree(argParse);
+    exit(0);
 }
 
 /**
@@ -523,6 +532,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
 
 /**
  * @brief 解析命令行参数
+ * @errors: 错误信息字符串统一又调用方申请，处理函数释放
  * @param argParse 解析器指针
  * @param argc 参数个数
  * @param argv 参数列表
@@ -573,6 +583,47 @@ void argParseParse(ArgParse *argParse, int argc, char *argv[]) {
         argParse->current_command->callback(argParse,
                                             argParse->current_command->val,
                                             argParse->current_command->val_len);
+    }
+
+    // 检查全局参数必填参数是否已设置
+    for (int i = 0; i < argParse->global_args_len; i++) {
+        if (argParse->global_args[i]->required &&
+            argParse->global_args[i]->is_trigged == false) {
+            // 错误处理，必填全局参数未设置
+            char *msg =
+                stringNewCopy(RED "ERROR" RESET ": Global Option " BLUE);
+            if (argParse->global_args[i]->short_opt != NULL) {
+                __catStr(&msg, 1, argParse->global_args[i]->short_opt);
+            } else {
+                __catStr(&msg, 1, argParse->global_args[i]->long_opt);
+            }
+            __catStr(&msg, 1, RESET " is required");
+            argParseError(argParse, NULL, msg,
+                          NULL); // 错误处理
+        }
+    }
+
+    // 检查当前命令的必填参数是否已设置
+    if (argParse->current_command != NULL) {
+        for (int i = 0; i < argParse->current_command->args_len; i++) {
+            if (argParse->current_command->args[i]->required &&
+                argParse->current_command->args[i]->is_trigged == false) {
+                // 错误处理，必填参数未设置
+                char *msg = stringNewCopy(RED "ERROR" RESET ": Command " BLUE);
+                __catStr(&msg, 1, argParse->current_command->name);
+                __catStr(&msg, 1, RESET " Option " BLUE);
+                if (argParse->current_command->args[i]->short_opt != NULL) {
+                    __catStr(
+                        &msg, 1, argParse->current_command->args[i]->short_opt);
+                } else {
+                    __catStr(
+                        &msg, 1, argParse->current_command->args[i]->long_opt);
+                }
+                __catStr(&msg, 1, RESET " is required");
+                argParseError(
+                    argParse, argParse->current_command, msg, NULL); // 错误处理
+            }
+        }
     }
 }
 
@@ -841,7 +892,6 @@ NORETURN void argParseError(ArgParse   *argParse,
             __catStr(&mgs, 2, "\n", suffix);
         }
 
-        // printf("\033[1;31mERROR\033[0m: Last command is unknown\n");
         printf("%s\n", mgs);
         free(mgs);
         free(help);
