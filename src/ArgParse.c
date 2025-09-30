@@ -67,7 +67,7 @@ void argParseAutoHelp(ArgParse *argParse) {
                          NULL,
                          __helpCallback,
                          false,
-                         NOVALUE);
+                         ArgParseNOVALUE);
 }
 
 int __commandHelpCallback(ArgParse *argParse, char **val, int val_len) {
@@ -96,7 +96,7 @@ void argParseCommandAutoHelp(Command *command) {
                    NULL,
                    __commandHelpCallback,
                    false,
-                   NOVALUE);
+                   ArgParseNOVALUE);
 }
 
 Command *argParseAddCommand(ArgParse         *argParse,
@@ -314,7 +314,7 @@ int __processArgs(ArgParse *argParse, CommandArgs *arg, int arg_index) {
 
     int current_index = arg_index;
 
-    if (arg->value_type == MULTIVALUE) {
+    if (arg->value_type == ArgParseMULTIVALUE) {
         for (int i = arg_index + 1; i < argParse->argc; i++) {
             if (checkArgType(argParse->argv[i]) ==
                 COMMAND) { // COMMAND是无--或-开头的字符串，也可认定为参数值
@@ -325,12 +325,12 @@ int __processArgs(ArgParse *argParse, CommandArgs *arg, int arg_index) {
                 break;
             }
         }
-    } else if (arg->value_type == SINGLEVALUE) {
+    } else if (arg->value_type == ArgParseSINGLEVALUE) {
         if (arg_index + 1 < argParse->argc) {
             argParseSetArgVal(arg, argParse->argv[arg_index + 1]);
             current_index = arg_index + 1;
         }
-    } else if (arg->value_type == NOVALUE) {
+    } else if (arg->value_type == ArgParseNOVALUE) {
         current_index = arg_index;
     }
 
@@ -437,7 +437,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
 
     command              = argParseFindCommand(argParse, name); // 查找命令
 
-    if (command == NULL && argParse->value_type == NOVALUE) {
+    if (command == NULL && argParse->value_type == ArgParseNOVALUE) {
         char *msg = NULL;
         if (name != NULL) {
             msg = stringNewCopy("\033[1;31mERROR\033[0m:");
@@ -449,7 +449,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
         return -1;
     }
 
-    if (command == NULL && argParse->value_type != NOVALUE) {
+    if (command == NULL && argParse->value_type != ArgParseNOVALUE) {
         return __processVal(argParse, command_index);
     }
 
@@ -463,7 +463,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
         switch (argType) {
         case COMMAND: {
             // 命令无值则处理子命令
-            if (command->value_type == NOVALUE) {
+            if (command->value_type == ArgParseNOVALUE) {
                 __processSubCommand(argParse, command, argParse->argv[i], i);
                 return argParse->argc - 1;
             } else {
@@ -751,12 +751,12 @@ char *argParseGenerateHelpForCommand(Command *command) {
     __catStr(&help_msg, 2, "\033[1;33mUsage\033[0m: ", command->name);
 
     switch (command->value_type) {
-    case NOVALUE:
+    case ArgParseNOVALUE:
         break;
-    case SINGLEVALUE:
+    case ArgParseSINGLEVALUE:
         __catStr(&help_msg, 1, " <value>");
         break;
-    case MULTIVALUE:
+    case ArgParseMULTIVALUE:
         __catStr(&help_msg, 1, " <value>...");
     }
 

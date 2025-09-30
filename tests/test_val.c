@@ -5,7 +5,7 @@
 #include <string.h>
 
 ArgParse *initArgParse() {
-    ArgParse *argparse    = argParseInit("测试程序", MULTIVALUE);
+    ArgParse *argparse    = argParseInit("测试程序", ArgParseMULTIVALUE);
     Command  *command     = NULL;
     Command  *sub_command = NULL;
 
@@ -17,13 +17,13 @@ ArgParse *initArgParse() {
                          NULL,
                          NULL,
                          false,
-                         NOVALUE);
+                         ArgParseNOVALUE);
     argParseAddGlobalArg(
-        argparse, "-q", "--quiet", "Quiet mode", NULL, NULL, false, NOVALUE);
+        argparse, "-q", "--quiet", "Quiet mode", NULL, NULL, false, ArgParseNOVALUE);
 
     // add arguments
     command = argParseAddCommand(
-        argparse, "install", "Install the package", NULL, NULL, NULL, NOVALUE);
+        argparse, "install", "Install the package", NULL, NULL, NULL, ArgParseNOVALUE);
     argParseAddArg(command,
                    "-i",
                    "--index",
@@ -31,7 +31,7 @@ ArgParse *initArgParse() {
                    "https://example.com",
                    NULL,
                    false,
-                   SINGLEVALUE);
+                   ArgParseSINGLEVALUE);
     argParseAddArg(command,
                    "-f",
                    "--file",
@@ -39,7 +39,7 @@ ArgParse *initArgParse() {
                    "package.json",
                    NULL,
                    false,
-                   MULTIVALUE);
+                   ArgParseMULTIVALUE);
     argParseAddArg(command,
                    "-p",
                    "--package",
@@ -47,10 +47,10 @@ ArgParse *initArgParse() {
                    "package.json",
                    NULL,
                    false,
-                   MULTIVALUE);
+                   ArgParseMULTIVALUE);
 
     sub_command = argParseAddSubCommand(
-        command, "tools", "Install tools", NULL, NULL, NULL, MULTIVALUE);
+        command, "tools", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-t",
@@ -59,9 +59,9 @@ ArgParse *initArgParse() {
                    "Tool name",
                    NULL,
                    true,
-                   MULTIVALUE);
+                   ArgParseMULTIVALUE);
     sub_command = argParseAddSubCommand(
-        command, "tools_sub", "Install tools", NULL, NULL, NULL, MULTIVALUE);
+        command, "tools_sub", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-s",
@@ -70,7 +70,7 @@ ArgParse *initArgParse() {
                    "tools subcommand test",
                    NULL,
                    true,
-                   MULTIVALUE);
+                   ArgParseMULTIVALUE);
 
     command = argParseAddCommand(argparse,
                                  "uninstall",
@@ -78,7 +78,7 @@ ArgParse *initArgParse() {
                                  NULL,
                                  NULL,
                                  NULL,
-                                 SINGLEVALUE);
+                                 ArgParseSINGLEVALUE);
     argParseAddArg(command,
                    "-p",
                    "--package",
@@ -86,7 +86,7 @@ ArgParse *initArgParse() {
                    "Package name",
                    NULL,
                    true,
-                   MULTIVALUE);
+                   ArgParseMULTIVALUE);
 
     return argparse;
 }

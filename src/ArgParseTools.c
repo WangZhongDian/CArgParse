@@ -179,7 +179,7 @@ argParseFindGlobalArgs(ArgParse *argParse, char *name, bool short_flag) {
  * @return 成功返回true，失败返回false
  */
 bool argParseSetArgVal(CommandArgs *args, char *val) {
-    if (args->value_type == MULTIVALUE) { // 多值
+    if (args->value_type == ArgParseMULTIVALUE) { // 多值
         args->val = realloc(args->val, (args->val_len + 1) * sizeof(char *));
         if (args->val == NULL) {
             return false;
@@ -190,7 +190,7 @@ bool argParseSetArgVal(CommandArgs *args, char *val) {
         }
         args->val_len++;
         return true;
-    } else if (args->value_type == SINGLEVALUE) { // 单值
+    } else if (args->value_type == ArgParseSINGLEVALUE) { // 单值
         if (args->val != NULL) {
             free(args->val);
         }
@@ -205,7 +205,7 @@ bool argParseSetArgVal(CommandArgs *args, char *val) {
         }
         args->val_len = 1;
         return true;
-    } else if (args->value_type == NOVALUE) { // 无值
+    } else if (args->value_type == ArgParseNOVALUE) { // 无值
         return true;
     }
 
@@ -213,7 +213,7 @@ bool argParseSetArgVal(CommandArgs *args, char *val) {
 }
 
 bool argParseSetCommandVal(Command *command, char *val) {
-    if (command->value_type == MULTIVALUE) { // 多值
+    if (command->value_type == ArgParseMULTIVALUE) { // 多值
         command->val =
             realloc(command->val, (command->val_len + 1) * sizeof(char *));
         if (command->val == NULL) {
@@ -225,7 +225,7 @@ bool argParseSetCommandVal(Command *command, char *val) {
         }
         command->val_len++;
         return true;
-    } else if (command->value_type == SINGLEVALUE) { // 单值
+    } else if (command->value_type == ArgParseSINGLEVALUE) { // 单值
         if (command->val != NULL) {
             free(command->val);
         }
@@ -240,7 +240,7 @@ bool argParseSetCommandVal(Command *command, char *val) {
         }
         command->val_len = 1;
         return true;
-    } else if (command->value_type == NOVALUE) { // 无值
+    } else if (command->value_type == ArgParseNOVALUE) { // 无值
         return true;
     }
     return false;
@@ -254,7 +254,7 @@ bool argParseSetCommandVal(Command *command, char *val) {
  */
 bool argParseSetVal(ArgParse *argParse, char *val) {
 
-    if (argParse->value_type == MULTIVALUE) { // 多值
+    if (argParse->value_type == ArgParseMULTIVALUE) { // 多值
         argParse->val =
             realloc(argParse->val, (argParse->val_len + 1) * sizeof(char *));
         if (argParse->val == NULL) {
@@ -266,7 +266,7 @@ bool argParseSetVal(ArgParse *argParse, char *val) {
         }
         argParse->val_len++;
         return true;
-    } else if (argParse->value_type == SINGLEVALUE) { // 单值
+    } else if (argParse->value_type == ArgParseSINGLEVALUE) { // 单值
         if (argParse->val != NULL) {
             free(argParse->val);
         }
@@ -281,7 +281,7 @@ bool argParseSetVal(ArgParse *argParse, char *val) {
         }
         argParse->val_len = 1;
         return true;
-    } else if (argParse->value_type == NOVALUE) { // 无值
+    } else if (argParse->value_type == ArgParseNOVALUE) { // 无值
         return true;
     }
     return false;
