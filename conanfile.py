@@ -6,7 +6,7 @@ import os
 
 class loggingRecipe(ConanFile):
     name = "cargparse"
-    version = "0.3.0"
+    version = "0.3.1"
     license = "MIT"
     author = "321640253@qq.com"
     url = "https://gitea.youmetme.wang/youmetme/logging"

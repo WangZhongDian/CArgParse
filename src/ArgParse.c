@@ -818,7 +818,7 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name) {
     return command->is_trigged;
 }
 
-_Noreturn void argParseError(ArgParse   *argParse,
+NORETURN void argParseError(ArgParse   *argParse,
                              Command    *lastCommand,
                              const char *prefix,
                              const char *suffix) {
