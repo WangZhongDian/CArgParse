@@ -7,7 +7,6 @@ int main(int argc, char *argv[]) {
 
     argParseParse(argparse, argc, argv);
 
-
     argParseFree(argparse);
 
     return 0;

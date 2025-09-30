@@ -18,12 +18,23 @@ ArgParse *initArgParse() {
                          NULL,
                          false,
                          ArgParseNOVALUE);
-    argParseAddGlobalArg(
-        argparse, "-q", "--quiet", "Quiet mode", NULL, NULL, false, ArgParseNOVALUE);
+    argParseAddGlobalArg(argparse,
+                         "-q",
+                         "--quiet",
+                         "Quiet mode",
+                         NULL,
+                         NULL,
+                         false,
+                         ArgParseNOVALUE);
 
     // add arguments
-    command = argParseAddCommand(
-        argparse, "install", "Install the package", NULL, NULL, NULL, ArgParseNOVALUE);
+    command = argParseAddCommand(argparse,
+                                 "install",
+                                 "Install the package",
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 ArgParseNOVALUE);
     argParseAddArg(command,
                    "-i",
                    "--index",
@@ -49,8 +60,13 @@ ArgParse *initArgParse() {
                    false,
                    ArgParseMULTIVALUE);
 
-    sub_command = argParseAddSubCommand(
-        command, "tools", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
+    sub_command = argParseAddSubCommand(command,
+                                        "tools",
+                                        "Install tools",
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-t",
@@ -60,8 +76,13 @@ ArgParse *initArgParse() {
                    NULL,
                    true,
                    ArgParseMULTIVALUE);
-    sub_command = argParseAddSubCommand(
-        command, "tools_sub", "Install tools", NULL, NULL, NULL, ArgParseMULTIVALUE);
+    sub_command = argParseAddSubCommand(command,
+                                        "tools_sub",
+                                        "Install tools",
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        ArgParseMULTIVALUE);
 
     argParseAddArg(sub_command,
                    "-s",
@@ -101,8 +122,8 @@ int main(int argc, char *argv[]) {
         printf("val: %s\n", val);
     }
 
-    int    len  = 0;
-    char **vals = argParseGetValList(argparse, &len);
+    int    len        = 0;
+    char **vals       = argParseGetValList(argparse, &len);
 
     char *test_val[3] = {"file1.txt", "file2.txt", "file3.txt"};
 
