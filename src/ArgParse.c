@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define RED   "\033[0;31m"
+#define BLUE  "\033[0;34m"
+#define RESET "\033[0m"
+
 static bool _AutoHelp = true; // 是否自动添加帮助信息
 static bool _COLOR    = true; // 是否启用颜色
 
@@ -37,15 +41,20 @@ ArgParse *argParseInit(char *documentation, ArgParseValueType value_type) {
 
 /**
  * @brief 自动帮助信息回调函数
+ * @param argParse ArgParse结构体指针
+ * @param val 参数值
+ * @param val_len 参数值长度
+ * @return 无返回值，将直接结束程序
  */
-int __helpCallback(ArgParse *argParse, char **val, int val_len) {
+NORETURN int __helpCallback(ArgParse *argParse, char **val, int val_len) {
     if (argParse == NULL) {
-        return -1;
+        exit(1);
     }
     char *help_doc = argParseGenerateHelp(argParse);
     printf("%s\n", help_doc);
     free(help_doc);
-    return 0;
+    argParseFree(argParse);
+    exit(0);
 }
 
 /**
@@ -67,7 +76,7 @@ void argParseAutoHelp(ArgParse *argParse) {
                          NULL,
                          __helpCallback,
                          false,
-                         NOVALUE);
+                         ArgParseNOVALUE);
 }
 
 int __commandHelpCallback(ArgParse *argParse, char **val, int val_len) {
@@ -96,7 +105,7 @@ void argParseCommandAutoHelp(Command *command) {
                    NULL,
                    __commandHelpCallback,
                    false,
-                   NOVALUE);
+                   ArgParseNOVALUE);
 }
 
 Command *argParseAddCommand(ArgParse         *argParse,
@@ -314,7 +323,7 @@ int __processArgs(ArgParse *argParse, CommandArgs *arg, int arg_index) {
 
     int current_index = arg_index;
 
-    if (arg->value_type == MULTIVALUE) {
+    if (arg->value_type == ArgParseMULTIVALUE) {
         for (int i = arg_index + 1; i < argParse->argc; i++) {
             if (checkArgType(argParse->argv[i]) ==
                 COMMAND) { // COMMAND是无--或-开头的字符串，也可认定为参数值
@@ -325,12 +334,12 @@ int __processArgs(ArgParse *argParse, CommandArgs *arg, int arg_index) {
                 break;
             }
         }
-    } else if (arg->value_type == SINGLEVALUE) {
+    } else if (arg->value_type == ArgParseSINGLEVALUE) {
         if (arg_index + 1 < argParse->argc) {
             argParseSetArgVal(arg, argParse->argv[arg_index + 1]);
             current_index = arg_index + 1;
         }
-    } else if (arg->value_type == NOVALUE) {
+    } else if (arg->value_type == ArgParseNOVALUE) {
         current_index = arg_index;
     }
 
@@ -437,7 +446,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
 
     command              = argParseFindCommand(argParse, name); // 查找命令
 
-    if (command == NULL && argParse->value_type == NOVALUE) {
+    if (command == NULL && argParse->value_type == ArgParseNOVALUE) {
         char *msg = NULL;
         if (name != NULL) {
             msg = stringNewCopy("\033[1;31mERROR\033[0m:");
@@ -449,7 +458,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
         return -1;
     }
 
-    if (command == NULL && argParse->value_type != NOVALUE) {
+    if (command == NULL && argParse->value_type != ArgParseNOVALUE) {
         return __processVal(argParse, command_index);
     }
 
@@ -463,7 +472,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
         switch (argType) {
         case COMMAND: {
             // 命令无值则处理子命令
-            if (command->value_type == NOVALUE) {
+            if (command->value_type == ArgParseNOVALUE) {
                 __processSubCommand(argParse, command, argParse->argv[i], i);
                 return argParse->argc - 1;
             } else {
@@ -523,6 +532,7 @@ int __processCommand(ArgParse *argParse, char *name, int command_index) {
 
 /**
  * @brief 解析命令行参数
+ * @errors: 错误信息字符串统一又调用方申请，处理函数释放
  * @param argParse 解析器指针
  * @param argc 参数个数
  * @param argv 参数列表
@@ -573,6 +583,47 @@ void argParseParse(ArgParse *argParse, int argc, char *argv[]) {
         argParse->current_command->callback(argParse,
                                             argParse->current_command->val,
                                             argParse->current_command->val_len);
+    }
+
+    // 检查全局参数必填参数是否已设置
+    for (int i = 0; i < argParse->global_args_len; i++) {
+        if (argParse->global_args[i]->required &&
+            argParse->global_args[i]->is_trigged == false) {
+            // 错误处理，必填全局参数未设置
+            char *msg =
+                stringNewCopy(RED "ERROR" RESET ": Global Option " BLUE);
+            if (argParse->global_args[i]->short_opt != NULL) {
+                __catStr(&msg, 1, argParse->global_args[i]->short_opt);
+            } else {
+                __catStr(&msg, 1, argParse->global_args[i]->long_opt);
+            }
+            __catStr(&msg, 1, RESET " is required");
+            argParseError(argParse, NULL, msg,
+                          NULL); // 错误处理
+        }
+    }
+
+    // 检查当前命令的必填参数是否已设置
+    if (argParse->current_command != NULL) {
+        for (int i = 0; i < argParse->current_command->args_len; i++) {
+            if (argParse->current_command->args[i]->required &&
+                argParse->current_command->args[i]->is_trigged == false) {
+                // 错误处理，必填参数未设置
+                char *msg = stringNewCopy(RED "ERROR" RESET ": Command " BLUE);
+                __catStr(&msg, 1, argParse->current_command->name);
+                __catStr(&msg, 1, RESET " Option " BLUE);
+                if (argParse->current_command->args[i]->short_opt != NULL) {
+                    __catStr(
+                        &msg, 1, argParse->current_command->args[i]->short_opt);
+                } else {
+                    __catStr(
+                        &msg, 1, argParse->current_command->args[i]->long_opt);
+                }
+                __catStr(&msg, 1, RESET " is required");
+                argParseError(
+                    argParse, argParse->current_command, msg, NULL); // 错误处理
+            }
+        }
     }
 }
 
@@ -751,12 +802,12 @@ char *argParseGenerateHelpForCommand(Command *command) {
     __catStr(&help_msg, 2, "\033[1;33mUsage\033[0m: ", command->name);
 
     switch (command->value_type) {
-    case NOVALUE:
+    case ArgParseNOVALUE:
         break;
-    case SINGLEVALUE:
+    case ArgParseSINGLEVALUE:
         __catStr(&help_msg, 1, " <value>");
         break;
-    case MULTIVALUE:
+    case ArgParseMULTIVALUE:
         __catStr(&help_msg, 1, " <value>...");
     }
 
@@ -819,9 +870,9 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name) {
 }
 
 NORETURN void argParseError(ArgParse   *argParse,
-                             Command    *lastCommand,
-                             const char *prefix,
-                             const char *suffix) {
+                            Command    *lastCommand,
+                            const char *prefix,
+                            const char *suffix) {
     if (argParse == NULL) {
         printf("ERROR: Parse is NULL\n");
         exit(1);
@@ -841,7 +892,6 @@ NORETURN void argParseError(ArgParse   *argParse,
             __catStr(&mgs, 2, "\n", suffix);
         }
 
-        // printf("\033[1;31mERROR\033[0m: Last command is unknown\n");
         printf("%s\n", mgs);
         free(mgs);
         free(help);

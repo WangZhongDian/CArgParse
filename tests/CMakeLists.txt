@@ -37,3 +37,12 @@ set_tests_properties(${PROJECT_NAME}unknow_command_arg PROPERTIES WILL_FAIL TRUE
 add_executable(${PROJECT_NAME}val test_val.c)
 target_link_libraries(${PROJECT_NAME}val CArgParse)
 add_test(${PROJECT_NAME}val ${PROJECT_NAME}val file1.txt file2.txt file3.txt -v -q)
+
+# 必填参数测试
+add_executable(${PROJECT_NAME}required test_required.c)
+target_link_libraries(${PROJECT_NAME}required CArgParse)
+add_test(${PROJECT_NAME}required_1 ${PROJECT_NAME}required -f)
+add_test(${PROJECT_NAME}required_2 ${PROJECT_NAME}required)
+set_tests_properties(${PROJECT_NAME}required_2 PROPERTIES WILL_FAIL TRUE)
+add_test(${PROJECT_NAME}required_3 ${PROJECT_NAME}required -h)
+add_test(${PROJECT_NAME}required_4 ${PROJECT_NAME}required -f install -h)

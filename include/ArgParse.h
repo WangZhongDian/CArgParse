@@ -7,13 +7,11 @@
 extern "C" {
 #endif
 
-
 #ifdef _MSC_VER
-    #define NORETURN __declspec(noreturn)
+#define NORETURN __declspec(noreturn)
 #else
-    #define NORETURN _Noreturn
+#define NORETURN _Noreturn
 #endif
-
 
 #define ARG_DEFAULT_HELP_FLAG "--help"
 
@@ -24,10 +22,10 @@ typedef int (*ArgParseCallback)(ArgParse *argParse,
                                 int       val_len); // 回调函数
 
 typedef enum {
-    NOVALUE = 0,     // 无值
-    SINGLEVALUE,     // 单值 例如： -i https://www.baidu.com
-    MULTIVALUE,      // 多值 例如: -s a b c 或 -s a -s b -s c等
-} ArgParseValueType; // 值类型
+    ArgParseNOVALUE = 0, // 无值
+    ArgParseSINGLEVALUE, // 单值 例如： -i https://www.baidu.com
+    ArgParseMULTIVALUE,  // 多值 例如: -s a b c 或 -s a -s b -s c等
+} ArgParseValueType;     // 值类型
 
 typedef struct CommandArgs {
     /* 构造属性 */
@@ -77,7 +75,7 @@ typedef struct ArgParse {
     struct CommandArgs **global_args;     // 全局参数
     int                  global_args_len; // 全局参数个数
     char                *documentation;   // 帮助文档
-    ArgParseValueType value_type; // 值类型 程序默认需要的值例如 gcc main.c
+    ArgParseValueType    value_type; // 值类型 程序默认需要的值例如 gcc main.c
 
     /* 解析所用到的属性*/
     struct Command *current_command; // 当前解析到的命令
@@ -312,9 +310,9 @@ char *
 argParseGenerateArgErrorMsg(ArgParse *argParse, char *name, bool short_flag);
 
 NORETURN void argParseError(ArgParse   *argParse,
-                             Command    *lastCommand,
-                             const char *prefix,
-                             const char *suffix);
+                            Command    *lastCommand,
+                            const char *prefix,
+                            const char *suffix);
 
 #ifdef __cplusplus
 }
