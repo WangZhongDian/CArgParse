@@ -4,11 +4,11 @@
 #include <string.h>
 
 ArgParse *Init() {
-    ArgParse *ap = argParseInit("简单的命令行工具示例",NOVALUE);
+    ArgParse *ap = argParseInit("简单的命令行工具示例",ArgParseNOVALUE);
 
     // 添加第一个命令
     Command *cmd = argParseAddCommand(
-        ap, "list", "列出文件列表", NULL, NULL, NULL, SINGLEVALUE);
+        ap, "list", "列出文件列表", NULL, NULL, NULL, ArgParseSINGLEVALUE);
 
     // 添加第一个命令的参数
     argParseAddArg(cmd,
@@ -18,7 +18,7 @@ ArgParse *Init() {
                    NULL,
                    NULL,
                    false,
-                   NOVALUE);
+                   ArgParseNOVALUE);
 
     return ap;
 }

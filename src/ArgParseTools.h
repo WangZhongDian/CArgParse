@@ -26,14 +26,14 @@ Command *createCommand(char             *name,
 CommandGroup *createCommandGroup(char *name, char *help); // 创建命令组
 
 CommandGroup *addCommandToGroup(CommandGroup *group,
-                                Command *command); // 添加命令到命令组
+                                Command      *command); // 添加命令到命令组
 
-CommandArgs *createCommandArgs(char            *short_opt,
-                               char            *long_opt,
-                               char            *default_val,
-                               char            *help,
-                               ArgParseCallback callback,
-                               bool             required,
+CommandArgs *createCommandArgs(char             *short_opt,
+                               char             *long_opt,
+                               char             *default_val,
+                               char             *help,
+                               ArgParseCallback  callback,
+                               bool              required,
                                ArgParseValueType value_type); // 创建命令参数
 
 /**

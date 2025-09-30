@@ -1,6 +1,8 @@
 #include "ArgParse.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 ArgParse *initArgParse() {
@@ -18,12 +20,12 @@ ArgParse *initArgParse() {
                          false,
                          ArgParseNOVALUE);
     argParseAddGlobalArg(argparse,
-                         "-q",
-                         "--quiet",
-                         "Quiet mode",
+                         "-f",
+                         "--file",
+                         "File name",
                          NULL,
                          NULL,
-                         false,
+                         true,
                          ArgParseNOVALUE);
 
     // add arguments
@@ -48,7 +50,7 @@ ArgParse *initArgParse() {
                    "Package file",
                    "package.json",
                    NULL,
-                   false,
+                   true,
                    ArgParseMULTIVALUE);
     argParseAddArg(command,
                    "-p",
@@ -109,4 +111,34 @@ ArgParse *initArgParse() {
                    ArgParseMULTIVALUE);
 
     return argparse;
+}
+
+int main(int argc, char *argv[]) {
+    ArgParse *argparse = initArgParse();
+
+    argParseParse(argparse, argc, argv);
+
+    char *val = argParseGetVal(argparse);
+    if (val) {
+        printf("val: %s\n", val);
+    }
+
+    // int    len        = 0;
+    // char **vals       = argParseGetValList(argparse, &len);
+
+    // char *test_val[3] = {"file1.txt", "file2.txt", "file3.txt"};
+
+    // if (vals) {
+    //     for (int i = 0; i < len; i++) {
+    //         printf("vals: %s\n", vals[i]);
+    //         assert(strcmp(vals[i], test_val[i]) == 0);
+    //     }
+    // }
+
+    // assert(argParseCheckGlobalTriggered(argparse, "-v"));
+    // assert(argParseCheckGlobalTriggered(argparse, "-f"));
+
+    argParseFree(argparse);
+
+    return 0;
 }
