@@ -11,7 +11,7 @@
  * @param str 字符串
  * @return 复制后的字符串内存指针
  */
-char *stringNewCopy(char *str) {
+char *stringNewCopy(const char *str) {
     if (str == NULL) {
         return NULL;
     }
@@ -24,9 +24,9 @@ char *stringNewCopy(char *str) {
 }
 
 // 构造命令
-Command *createCommand(char             *name,
-                       char             *help,
-                       char             *default_val,
+Command *createCommand(const char       *name,
+                       const char       *help,
+                       const char       *default_val,
                        ArgParseCallback  callback,
                        CommandGroup     *group,
                        ArgParseValueType value_typ) {
@@ -83,7 +83,7 @@ ArgType checkArgType(char *arg) {
 }
 
 // 寻找命令
-Command *argParseFindCommand(ArgParse *argParse, char *name) {
+Command *argParseFindCommand(ArgParse *argParse, const char *name) {
     for (size_t i = 0; i < argParse->commands_len; i++) {
         if (strcmp(argParse->commands[i]->name, name) == 0) {
             return argParse->commands[i];
@@ -92,7 +92,7 @@ Command *argParseFindCommand(ArgParse *argParse, char *name) {
     return NULL;
 }
 
-Command *argParseFindSubCommand(Command *command, char *name) {
+Command *argParseFindSubCommand(Command *command, const char *name) {
     for (size_t i = 0; i < command->sub_commands_len; i++) {
         if (strcmp(command->sub_commands[i]->name, name) == 0) {
             return command->sub_commands[i];
@@ -101,10 +101,10 @@ Command *argParseFindSubCommand(Command *command, char *name) {
     return NULL;
 }
 
-CommandArgs *createCommandArgs(char             *short_opt,
-                               char             *long_opt,
-                               char             *default_val,
-                               char             *help,
+CommandArgs *createCommandArgs(const char       *short_opt,
+                               const char       *long_opt,
+                               const char       *default_val,
+                               const char       *help,
                                ArgParseCallback  callback,
                                bool              required,
                                ArgParseValueType value_type) {
@@ -133,7 +133,7 @@ CommandArgs *createCommandArgs(char             *short_opt,
 }
 
 CommandArgs *
-argParseFindCommandArgs(Command *command, char *name, bool short_flag) {
+argParseFindCommandArgs(Command *command, const char *name, bool short_flag) {
     if (command == NULL) {
         return NULL;
     }
@@ -155,7 +155,7 @@ argParseFindCommandArgs(Command *command, char *name, bool short_flag) {
 }
 
 CommandArgs *
-argParseFindGlobalArgs(ArgParse *argParse, char *name, bool short_flag) {
+argParseFindGlobalArgs(ArgParse *argParse, const char *name, bool short_flag) {
     for (size_t i = 0; i < argParse->global_args_len; i++) {
         if (short_flag) {
             if (argParse->global_args[i]->short_opt != NULL &&
@@ -178,7 +178,7 @@ argParseFindGlobalArgs(ArgParse *argParse, char *name, bool short_flag) {
  * @param val 值
  * @return 成功返回true，失败返回false
  */
-bool argParseSetArgVal(CommandArgs *args, char *val) {
+bool argParseSetArgVal(CommandArgs *args, const char *val) {
     if (args->value_type == ArgParseMULTIVALUE) { // 多值
         args->val = realloc(args->val, (args->val_len + 1) * sizeof(char *));
         if (args->val == NULL) {
@@ -212,7 +212,7 @@ bool argParseSetArgVal(CommandArgs *args, char *val) {
     return false;
 }
 
-bool argParseSetCommandVal(Command *command, char *val) {
+bool argParseSetCommandVal(Command *command, const char *val) {
     if (command->value_type == ArgParseMULTIVALUE) { // 多值
         command->val =
             realloc(command->val, (command->val_len + 1) * sizeof(char *));
@@ -252,7 +252,7 @@ bool argParseSetCommandVal(Command *command, char *val) {
  * @param val 值
  * @return 成功返回true，失败返回false
  */
-bool argParseSetVal(ArgParse *argParse, char *val) {
+bool argParseSetVal(ArgParse *argParse, const char *val) {
 
     if (argParse->value_type == ArgParseMULTIVALUE) { // 多值
         argParse->val =
@@ -287,7 +287,7 @@ bool argParseSetVal(ArgParse *argParse, char *val) {
     return false;
 }
 
-size_t __getStrlen(char *str) {
+size_t __getStrlen(const char *str) {
     if (str == NULL) {
         return 0;
     }
