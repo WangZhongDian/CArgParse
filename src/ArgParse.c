@@ -109,9 +109,9 @@ void argParseCommandAutoHelp(Command *command) {
 }
 
 Command *argParseAddCommand(ArgParse         *argParse,
-                            char             *name,
-                            char             *help,
-                            char             *default_val,
+                            const char       *name,
+                            const char       *help,
+                            const char       *default_val,
                             ArgParseCallback  callback,
                             CommandGroup     *group,
                             ArgParseValueType value_type) {
@@ -148,9 +148,9 @@ Command *argParseAddCommand(ArgParse         *argParse,
  * @return
  */
 Command *argParseAddSubCommand(Command          *Parent,
-                               char             *name,
-                               char             *help,
-                               char             *default_val,
+                               const char       *name,
+                               const char       *help,
+                               const char       *default_val,
                                ArgParseCallback  callback,
                                CommandGroup     *group,
                                ArgParseValueType value_type) {
@@ -179,10 +179,10 @@ Command *argParseAddSubCommand(Command          *Parent,
 }
 
 CommandArgs *argParseAddArg(Command          *command,
-                            char             *short_opt,
-                            char             *long_opt,
-                            char             *help,
-                            char             *default_val,
+                            const char       *short_opt,
+                            const char       *long_opt,
+                            const char       *help,
+                            const char       *default_val,
                             ArgParseCallback  callback,
                             bool              required,
                             ArgParseValueType value_type) {
@@ -209,10 +209,10 @@ CommandArgs *argParseAddArg(Command          *command,
 }
 
 CommandArgs *argParseAddGlobalArg(ArgParse         *argParse,
-                                  char             *short_opt,
-                                  char             *long_opt,
-                                  char             *help,
-                                  char             *default_val,
+                                  const char       *short_opt,
+                                  const char       *long_opt,
+                                  const char       *help,
+                                  const char       *default_val,
                                   ArgParseCallback  callback,
                                   bool              required,
                                   ArgParseValueType value_type) {
@@ -649,7 +649,7 @@ char *argParseGetCurCommandName(ArgParse *argParse) {
  * @return char* 选项值
  * @return
  */
-char *argParseGetCurArg(ArgParse *argParse, char *opt) {
+char *argParseGetCurArg(ArgParse *argParse, const char *opt) {
     CommandArgs *arg = NULL;
     // 尝试获取当前命令的长选项参数
     arg = argParseFindCommandArgs(argParse->current_command, opt, false);
@@ -675,7 +675,7 @@ char *argParseGetCurArg(ArgParse *argParse, char *opt) {
  * @param len 参数个数buffer
  * @return char** 参数列表
  */
-char **argParseGetCurArgList(ArgParse *argParse, char *opt, int *len) {
+char **argParseGetCurArgList(ArgParse *argParse, const char *opt, int *len) {
     CommandArgs *arg = NULL;
     arg = argParseFindCommandArgs(argParse->current_command, opt, false);
 
@@ -696,7 +696,7 @@ char **argParseGetCurArgList(ArgParse *argParse, char *opt, int *len) {
  * @param opt 选项名
  * @return char* 选项值
  */
-char *argParseGetGlobalArg(ArgParse *argParse, char *opt) {
+char *argParseGetGlobalArg(ArgParse *argParse, const char *opt) {
     CommandArgs *arg = NULL;
     arg              = argParseFindGlobalArgs(argParse, opt, false);
 
@@ -750,7 +750,7 @@ char **argParseGetCurCommandValues(ArgParse *argParse, int *len) {
  * @param len 参数个数buffer
  * @return char** 参数列表
  */
-char **argParseGetGlobalArgList(ArgParse *argParse, char *opt, int *len) {
+char **argParseGetGlobalArgList(ArgParse *argParse, const char *opt, int *len) {
     CommandArgs *arg = NULL;
     arg              = argParseFindGlobalArgs(argParse, opt, false);
 
@@ -833,7 +833,7 @@ char *argParseGenerateHelpForCommand(Command *command) {
 }
 
 //  检查全局参数是否被触发
-bool argParseCheckGlobalTriggered(ArgParse *argParse, char *opt) {
+bool argParseCheckGlobalTriggered(ArgParse *argParse, const char *opt) {
     CommandArgs *arg = NULL;
     arg              = argParseFindGlobalArgs(argParse, opt, false);
 
@@ -847,7 +847,7 @@ bool argParseCheckGlobalTriggered(ArgParse *argParse, char *opt) {
     return arg->is_trigged;
 }
 // 检测当前命令的某项参数是否被触发
-bool argParseCheckCurArgTriggered(ArgParse *argParse, char *opt) {
+bool argParseCheckCurArgTriggered(ArgParse *argParse, const char *opt) {
     CommandArgs *arg = NULL;
     arg = argParseFindCommandArgs(argParse->current_command, opt, false);
 
@@ -861,7 +861,8 @@ bool argParseCheckCurArgTriggered(ArgParse *argParse, char *opt) {
     return arg->is_trigged;
 }
 // 检测指定命令是否被触发
-bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name) {
+bool argParseCheckCommandTriggered(ArgParse   *argParse,
+                                   const char *command_name) {
     Command *command = argParseFindCommand(argParse, command_name);
     if (command == NULL) {
         return false;
@@ -923,8 +924,9 @@ NORETURN void argParseError(ArgParse   *argParse,
     exit(1);
 }
 
-char *
-argParseGenerateArgErrorMsg(ArgParse *argParse, char *name, bool short_flag) {
+char *argParseGenerateArgErrorMsg(ArgParse   *argParse,
+                                  const char *name,
+                                  bool        short_flag) {
     if (argParse == NULL) {
         return NULL;
     }
