@@ -118,9 +118,9 @@ void argParseAutoHelp(ArgParse *argParse);
  * @return Command* 命令指针
  */
 Command *argParseAddCommand(ArgParse         *argParse,
-                            char             *name,
-                            char             *help,
-                            char             *default_val, // 默认值
+                            const char       *name,
+                            const char       *help,
+                            const char       *default_val, // 默认值
                             ArgParseCallback  callback,
                             CommandGroup     *group,
                             ArgParseValueType value_type);
@@ -135,9 +135,9 @@ Command *argParseAddCommand(ArgParse         *argParse,
  * @return Command* 子命令指针
  */
 Command *argParseAddSubCommand(Command          *Parent,
-                               char             *name,
-                               char             *help,
-                               char             *default_val,
+                               const char       *name,
+                               const char       *help,
+                               const char       *default_val,
                                ArgParseCallback  callback,
                                CommandGroup     *group,
                                ArgParseValueType value_type);
@@ -154,10 +154,10 @@ Command *argParseAddSubCommand(Command          *Parent,
  * @return CommandArgs* 参数指针
  */
 CommandArgs *argParseAddArg(Command          *command,
-                            char             *short_opt,
-                            char             *long_opt,
-                            char             *help,
-                            char             *default_val,
+                            const char       *short_opt,
+                            const char       *long_opt,
+                            const char       *help,
+                            const char       *default_val,
                             ArgParseCallback  callback,
                             bool              required,
                             ArgParseValueType value_type);
@@ -174,10 +174,10 @@ CommandArgs *argParseAddArg(Command          *command,
  * @return
  */
 CommandArgs *argParseAddGlobalArg(ArgParse         *argParse,
-                                  char             *short_opt,
-                                  char             *long_opt,
-                                  char             *help,
-                                  char             *default_val,
+                                  const char       *short_opt,
+                                  const char       *long_opt,
+                                  const char       *help,
+                                  const char       *default_val,
                                   ArgParseCallback  callback,
                                   bool              required,
                                   ArgParseValueType value_type);
@@ -228,7 +228,7 @@ char **argParseGetCurCommandValues(ArgParse *argParse, int *len);
  * @return char* 选项值
  * @return
  */
-char *argParseGetCurArg(ArgParse *argParse, char *opt);
+char *argParseGetCurArg(ArgParse *argParse, const char *opt);
 
 /**
  * @brief 获取当前解析到的命令参数列表,仅适用于多值参数
@@ -237,7 +237,7 @@ char *argParseGetCurArg(ArgParse *argParse, char *opt);
  * @param len 参数个数buffer
  * @return char** 参数列表
  */
-char **argParseGetCurArgList(ArgParse *argParse, char *opt, int *len);
+char **argParseGetCurArgList(ArgParse *argParse, const char *opt, int *len);
 
 /**
  * @brief 获取全局参数
@@ -245,7 +245,7 @@ char **argParseGetCurArgList(ArgParse *argParse, char *opt, int *len);
  * @param opt 选项名
  * @return char* 选项值
  */
-char *argParseGetGlobalArg(ArgParse *argParse, char *opt);
+char *argParseGetGlobalArg(ArgParse *argParse, const char *opt);
 
 /**
  * @brief 获取全局参数列表,仅适用于多值参数
@@ -254,7 +254,7 @@ char *argParseGetGlobalArg(ArgParse *argParse, char *opt);
  * @param len 参数个数buffer
  * @return char** 参数列表
  */
-char **argParseGetGlobalArgList(ArgParse *argParse, char *opt, int *len);
+char **argParseGetGlobalArgList(ArgParse *argParse, const char *opt, int *len);
 
 /**
  * @brief 检查当前解析到的命令的某个参数是否被触发
@@ -262,7 +262,7 @@ char **argParseGetGlobalArgList(ArgParse *argParse, char *opt, int *len);
  * @param opt 选项名
  * @return bool 是否被触发
  */
-bool argParseCheckCurArgTriggered(ArgParse *argParse, char *opt);
+bool argParseCheckCurArgTriggered(ArgParse *argParse, const char *opt);
 
 /**
  * @brief 检查当前解析到的命令是否被触发
@@ -270,7 +270,8 @@ bool argParseCheckCurArgTriggered(ArgParse *argParse, char *opt);
  * @param command_name 命令名
  * @return bool 是否被触发
  */
-bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name);
+bool argParseCheckCommandTriggered(ArgParse   *argParse,
+                                   const char *command_name);
 
 /**
  * @brief 检查全局参数是否被触发
@@ -278,7 +279,7 @@ bool argParseCheckCommandTriggered(ArgParse *argParse, char *command_name);
  * @param   opt 选项名
  * @return bool 是否被触发
  */
-bool argParseCheckGlobalTriggered(ArgParse *argParse, char *opt);
+bool argParseCheckGlobalTriggered(ArgParse *argParse, const char *opt);
 
 char  *argParseGetVal(ArgParse *argParse);
 char **argParseGetValList(ArgParse *argParse, int *len);
@@ -306,8 +307,9 @@ char *argParseGenerateHelp(ArgParse *argParse);
  * @param short_flag 是否为短选项
  * @return char* 选项错误信息
  */
-char *
-argParseGenerateArgErrorMsg(ArgParse *argParse, char *name, bool short_flag);
+char *argParseGenerateArgErrorMsg(ArgParse   *argParse,
+                                  const char *name,
+                                  bool        short_flag);
 
 NORETURN void argParseError(ArgParse   *argParse,
                             Command    *lastCommand,
