@@ -9,7 +9,7 @@ class CArgParseRecipe(ConanFile):
     version = "0.3.2"
     license = "MIT"
     author = "321640253@qq.com"
-    url = "https://gitea.youmetme.wang/youmetme/CArgParse"
+    url = "https://github.com/WangZhongDian/CArgParse"
     description = "C语言命令行参数解析器"
     topics = (
         "argparse",
